@@ -4,6 +4,7 @@ import com.onkar.chc.entity.MedicalRecordEntity;
 import com.onkar.chc.entity.PatientEntity;
 import com.onkar.chc.entity.UserEntity;
 import com.onkar.chc.globalException.DataNotFoundException;
+import com.onkar.chc.repo.DoctorRepo;
 import com.onkar.chc.repo.MedicalRecordRepo;
 import com.onkar.chc.repo.PatientRepo;
 import com.onkar.chc.repo.UserRepo;
@@ -35,38 +36,37 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     PatientRepo patientRepo;
 
 
-    @Override
-    public Boolean validatePatientAndDoctor(String userName, Integer healthCardNo, Long doctorRegNo) {
-        UserEntity userData=userRepo.getUserDataForValidation(userName,healthCardNo).orElse(null);
-        UserEntity doctorDetails=userRepo.findByDoctorRegiNo(doctorRegNo).orElse(null);
+    @Autowired
+    DoctorRepo doctorRepo;
 
-        if(userData!=null && doctorDetails!=null)
-            return true;
-        else
-            return false;
+    @Override
+    public Boolean validatePatientAndDoctor(String userName, String healthCardNo, Long doctorRegNo) {
+        UserEntity userData = userRepo.getUserDataForValidation(userName, healthCardNo).orElse(null);
+        com.onkar.chc.entity.DoctorEntity doctorDetails = doctorRepo.findByDoctorRegiNo(doctorRegNo).orElse(null);
+
+        return userData != null && doctorDetails != null;
     }
 
-
-
     @Override
-    public String createNewMedicalRecord(MedicalRecordRequestDTO medicalRecordRequestDTO, Integer healthCardNo) {
+    public String createNewMedicalRecord(MedicalRecordRequestDTO medicalRecordRequestDTO, String healthCardNo) {
 
         //DTO-> ENTITY -> FULFILL -> SAVE.
-        MedicalRecordEntity medicalRecordEntity=modelMapper.map(medicalRecordRequestDTO,MedicalRecordEntity.class);
+        MedicalRecordEntity medicalRecordEntity = modelMapper.map(medicalRecordRequestDTO, MedicalRecordEntity.class);
 
         //FULFILL ENTITY.
         //DATE OF CREATION. -> USE DATE OR LOCALDATE.
         medicalRecordEntity.setCreatedDate(LocalDate.now().toString());
 
-        //PATIENT CHA OBJECT.
-            UserEntity userEntity=userRepo.findByHealthCardNo(healthCardNo).orElseThrow(()->new RuntimeException("User is not found."));
+        //PATIENT OBJECT.
+        UserEntity userEntity = userRepo.findByHealthCardNo(healthCardNo)
+                .orElseThrow(() -> new RuntimeException("User is not found."));
 
         //Pull patient object from Medical Records.
-        PatientEntity patientData=medicalRecordEntity.getPatientEntity();
-        PatientEntity existingPatient=patientRepo.findById(healthCardNo).orElse(null);
+        PatientEntity patientData = medicalRecordEntity.getPatientEntity();
+        PatientEntity existingPatient = patientRepo.findById(healthCardNo).orElse(null);
 
         //Fulfill it using userEntity.
-        patientData.setUserName(userEntity.getUserName());
+        patientData.setUserName(userEntity.getUsername());
         patientData.setHealthCardNo(userEntity.getHealthCardNo());
         patientData.setDob(userEntity.getDob());
         patientData.setGender(userEntity.getGender());
@@ -74,16 +74,14 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         medicalRecordEntity.setPatientEntity(patientData);
 
         //LOGIC TO SAVE PATIENT IN PATIENT TABLE IF DOESN'T EXIST OR UPDATE DATA IF EXISTS.
-        if(existingPatient==null)
+        if (existingPatient == null)
             patientRepo.save(patientData);
-        else{
+        else {
             existingPatient.setAge(patientData.getAge());
             existingPatient.setWeight(patientData.getWeight());
             existingPatient.setBloodPressure(patientData.getBloodPressure());
             patientRepo.save(existingPatient);
         }
-
-
 
         medicalRecordRepo.save(medicalRecordEntity);
 
@@ -91,37 +89,26 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Override
-    public Boolean validatePatient(String userName, Integer healthCardNo) {
-        UserEntity userData = userRepo.getUserDataForValidation(userName, healthCardNo).orElseThrow(() -> new DataNotFoundException("Patient details are invalid."));
+    public Boolean validatePatient(String userName, String healthCardNo) {
+        UserEntity userData = userRepo.getUserDataForValidation(userName, healthCardNo)
+                .orElseThrow(() -> new DataNotFoundException("Patient details are invalid."));
         return true;
     }
 
     @Override
-    public MedicalHistoryResponseDTO getMedicalRecord(Integer healthCardNo) {
-        PatientEntity patientEntity=patientRepo.findById(healthCardNo).orElseThrow(()->new DataNotFoundException("Patient is not found."));
+    public MedicalHistoryResponseDTO getMedicalRecord(String healthCardNo) {
+        PatientEntity patientEntity = patientRepo.findById(healthCardNo)
+                .orElseThrow(() -> new DataNotFoundException("Patient is not found."));
 
-        List<MedicalRecordEntity> medicalRecordEntityList=medicalRecordRepo.findByPatientEntity(patientEntity).orElseThrow(()->new RuntimeException("No medical records found."));
+        List<MedicalRecordEntity> medicalRecordEntityList = medicalRecordRepo.findByPatientEntity(patientEntity)
+                .orElseThrow(() -> new RuntimeException("No medical records found."));
 
-        List<MedicalRecordResponseDTO> medicalRecordResponseDTOList=medicalRecordEntityList.stream().map(a->modelMapper.map(a,MedicalRecordResponseDTO.class)).toList();
+        List<MedicalRecordResponseDTO> medicalRecordResponseDTOList = medicalRecordEntityList.stream()
+                .map(a -> modelMapper.map(a, MedicalRecordResponseDTO.class)).toList();
 
         return MedicalHistoryResponseDTO.builder()
                 .patientEntity(modelMapper.map(patientEntity, PatientResponseDTO.class))
                 .medicalRecordResponseDTOList(medicalRecordResponseDTOList)
                 .build();
     }
-
-    /*@Override
-    public MedicalHistoryResponseDTO getMedicalRecord(Integer healthCardNo) {
-        PatientEntity patientEntity=patientRepo.findById(healthCardNo).orElseThrow(()->new RuntimeException("Patient is not found."));
-
-        List<MedicalRecordEntity> medicalRecordEntityList=medicalRecordRepo.findByPatientEntity(patientEntity).orElseThrow(()->new RuntimeException("No medical records found."));
-
-        List<MedicalRecordRequestDTO> medicalRecordRequestDTOList=medicalRecordEntityList.stream().map(a->modelMapper.map(a,MedicalRecordRequestDTO.class)).toList();
-
-        return MedicalHistoryResponseDTO.builder()
-                .patientEntity(modelMapper.map(patientEntity, PatientRequestDTO.class))
-                .medicalRecordRequestDTOList(medicalRecordRequestDTOList)
-                .build();
-    }*/
-
 }

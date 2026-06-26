@@ -21,17 +21,17 @@ public class UserResponseDTO {
     //Last Name
     private String lastName;
 
-    //Password
-    private String password;
-
     //Email
     private String email;
 
     //Contact No.
     private Long contactNo;
 
-    //Health Card No
-    private Integer healthCardNo;
+    //Health Card ID - auto-generated format: PUN00000001
+    private String healthCardNo;
+
+    //District
+    private String district;
 
     //User role
     private String role;
@@ -45,6 +45,9 @@ public class UserResponseDTO {
     //Chemist Id
     private Long chemistRegiNo;
 
+    //Pathologist License No
+    private String pathologistLicenseNo;
+
     //Address
     private String address;
 
@@ -53,4 +56,7 @@ public class UserResponseDTO {
 
     //BloodGroup
     private String bloodGroup;
+
+    //Registration date
+    private String createdAt;
 }

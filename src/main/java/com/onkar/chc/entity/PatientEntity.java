@@ -16,8 +16,8 @@ import lombok.*;
 public class PatientEntity {
 
     @Id
-    @Column(name = "PATIENT_HEALTH_CARD_NO")
-    private Integer healthCardNo;
+    @Column(name = "PATIENT_HEALTH_CARD_ID")
+    private String healthCardNo;
 
     @Column(name = "USER_NAME")
     private String userName;

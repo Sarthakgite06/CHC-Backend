@@ -8,11 +8,10 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+@RestController
 @Validated
 @RequestMapping("/user")
 public class UserController {
@@ -24,26 +23,20 @@ public class UserController {
     @PostMapping("/signUp")
     public ResponseEntity<Messages> signUp(@Valid @RequestBody UserRequestDTO userRequestDTO){
         String returnMsg=userService.signUp(userRequestDTO);
-        //Builder method is used to initialize fields in the class.
-        //Build method returns object of that class.
         Messages messages= Messages.builder()
                             .msg(returnMsg)
                             .build();
         return new ResponseEntity<>(messages, HttpStatus.CREATED);
-
     }
 
     //login
     @GetMapping("/login")
     public ResponseEntity<UserResponseDTO> login(@RequestParam String userName, @RequestParam String password){
-
         UserResponseDTO userResponseDTO=userService.login(userName, password);
-
         if(userResponseDTO!=null)
             return new ResponseEntity<>(userResponseDTO, HttpStatus.OK);
         else
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-
     }
 
     //get
@@ -53,12 +46,20 @@ public class UserController {
         return new ResponseEntity<>(userResponseDTO, HttpStatus.ACCEPTED);
     }
 
+    @Autowired
+    com.onkar.chc.repo.DoctorRepo doctorRepo;
+
     //update
     @PutMapping("/updateUserData")
-    public ResponseEntity<String> updateUser(@RequestParam Integer id, @RequestBody UserRequestDTO userRequestDTO){
+    public ResponseEntity<Messages> updateUser(@RequestParam Integer id, @RequestBody UserRequestDTO userRequestDTO){
         String msg = userService.updateUserData(id,userRequestDTO);
-        return new ResponseEntity<>(msg, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(Messages.builder().msg(msg).build(), HttpStatus.ACCEPTED);
     }
 
-
+    @GetMapping("/getDoctorRegNo")
+    public ResponseEntity<Long> getDoctorRegNo(@RequestParam String userName) {
+        return doctorRepo.findByUserName(userName)
+            .map(doctor -> new ResponseEntity<>(doctor.getDoctorRegiNo(), HttpStatus.OK))
+            .orElseGet(() -> new ResponseEntity<>(null, HttpStatus.NOT_FOUND));
+    }
 }

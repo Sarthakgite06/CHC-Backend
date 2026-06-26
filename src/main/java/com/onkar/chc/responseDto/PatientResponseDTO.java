@@ -9,7 +9,7 @@ import lombok.*;
 @Builder
 public class PatientResponseDTO {
 
-    private Integer healthCardNo;
+    private String healthCardNo;
 
     private String userName;
 

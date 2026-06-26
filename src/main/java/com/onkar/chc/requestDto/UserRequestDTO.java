@@ -2,7 +2,6 @@ package com.onkar.chc.requestDto;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
-import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
@@ -30,7 +29,6 @@ public class UserRequestDTO {
     @NotNull
     @NotBlank
     @NotEmpty
-    @Pattern(regexp = "^(?=.[a-z])(?=.[A-Z])(?=.\\\\d)(?=.[@$!%?&])[A-Za-z\\\\d@$!%?&]{8,20}$",message = "Enter valid password.")
     private String password;
 
     //Email
@@ -41,8 +39,10 @@ public class UserRequestDTO {
     @Digits(integer = 12,fraction = 0)
     private Long contactNo;
 
-    //Health Card No
-    private Integer healthCardNo;
+    // Health Card ID is auto-generated — NOT user-supplied
+    // District is used instead for generation
+    @NotBlank(message = "Select a valid district.")
+    private String district;
 
     //User role
     @NotBlank(message = "Enter valid role.")
@@ -54,11 +54,14 @@ public class UserRequestDTO {
     @NotEmpty
     private String dob;
 
-    //Doctor Id
+    //Doctor Id - credential for Doctor role
     private Long doctorRegiNo;
 
-    //Chemist Id
+    //Chemist Id - credential for Chemist role
     private Long chemistRegiNo;
+
+    //Pathologist License No - credential for Pathologist role
+    private String pathologistLicenseNo;
 
     //Address
     @NotNull
