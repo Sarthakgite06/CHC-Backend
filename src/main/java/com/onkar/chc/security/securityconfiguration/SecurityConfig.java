@@ -67,6 +67,10 @@ public class SecurityConfig {
                                 // Role-restricted endpoints
                                 .requestMatchers(HttpMethod.POST, "/doctor/createMedicineRecord").hasRole("Doctor")
                                 .requestMatchers("/admin/**").hasRole("Admin")
+                                // Medical Imaging endpoints
+                                .requestMatchers(HttpMethod.POST, "/medical-imaging/upload").hasRole("Doctor")
+                                .requestMatchers(HttpMethod.DELETE, "/medical-imaging/**").hasRole("Doctor")
+                                .requestMatchers("/medical-imaging/**").authenticated()
                                 // Authenticated endpoints (any role)
                                 .requestMatchers("/feedback/**").authenticated()
                                 .requestMatchers("/chc/search-users").authenticated()
