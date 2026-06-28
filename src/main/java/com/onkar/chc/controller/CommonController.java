@@ -2,9 +2,12 @@ package com.onkar.chc.controller;
 
 import com.onkar.chc.responseDto.MedicalHistoryResponseDTO;
 import com.onkar.chc.service.MedicalRecordService;
+import com.onkar.chc.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,6 +27,15 @@ public class CommonController {
             @RequestParam(required = false) String userName) {
 
         MedicalHistoryResponseDTO medicalHistoryResponseDTO;
+
+        // Block Pathologists — they only need lab reports, not prescriptions
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof UserEntity currentUser) {
+            String role = currentUser.getRole().replace("ROLE_", "");
+            if ("Pathologist".equalsIgnoreCase(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
 
         // Use whichever is provided for validation
         String cardId = (healthCardNo != null && !healthCardNo.isBlank()) ? healthCardNo : "";
