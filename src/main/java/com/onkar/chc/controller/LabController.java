@@ -185,27 +185,14 @@ public class LabController {
             return true;
         }
         
-        // 2. Pathologist (can view list, but we filter list by their username in getReportsForPatient)
+        // 2. Pathologist
         if ("Pathologist".equalsIgnoreCase(role)) {
             return true;
         }
         
-        // 3. Authorized doctor
-        if ("Doctor".equalsIgnoreCase(role)) {
-            var doctorOpt = doctorRepo.findByUserName(currentUser.getUsername());
-            if (doctorOpt.isPresent()) {
-                Long doctorRegNo = doctorOpt.get().getDoctorRegiNo();
-                // Has doctor treated this patient in the past?
-                boolean hasTreated = medicalRecordRepo.existsByPatientEntity_HealthCardNoAndDoctorRegNo(healthCardId, doctorRegNo);
-                if (hasTreated) {
-                    return true;
-                }
-                // Has doctor requested any lab test for this patient?
-                boolean hasRequested = labTestRequestRepo.existsByPatientHealthCardIdAndDoctorUserName(healthCardId, currentUser.getUsername());
-                if (hasRequested) {
-                    return true;
-                }
-            }
+        // 3. Doctor and Chemist (general permission to view patient records)
+        if ("Doctor".equalsIgnoreCase(role) || "Chemist".equalsIgnoreCase(role)) {
+            return true;
         }
         
         return false;
@@ -229,21 +216,9 @@ public class LabController {
             return currentUser.getUsername().equalsIgnoreCase(report.getPathologistUserName());
         }
         
-        // 3. Authorized doctor
-        if ("Doctor".equalsIgnoreCase(role)) {
-            // Did this doctor request this specific test?
-            if (currentUser.getUsername().equalsIgnoreCase(report.getLabTestRequest().getDoctorUserName())) {
-                return true;
-            }
-            // Or has this doctor treated this patient in the past?
-            var doctorOpt = doctorRepo.findByUserName(currentUser.getUsername());
-            if (doctorOpt.isPresent()) {
-                Long doctorRegNo = doctorOpt.get().getDoctorRegiNo();
-                boolean hasTreated = medicalRecordRepo.existsByPatientEntity_HealthCardNoAndDoctorRegNo(healthCardId, doctorRegNo);
-                if (hasTreated) {
-                    return true;
-                }
-            }
+        // 3. Doctor and Chemist (general permission to view report)
+        if ("Doctor".equalsIgnoreCase(role) || "Chemist".equalsIgnoreCase(role)) {
+            return true;
         }
         
         return false;
