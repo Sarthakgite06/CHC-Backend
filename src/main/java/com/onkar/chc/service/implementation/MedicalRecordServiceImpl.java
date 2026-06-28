@@ -137,17 +137,42 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         return true;
     }
 
+
     @Override
     public MedicalHistoryResponseDTO getMedicalRecord(String healthCardNo) {
-        PatientEntity patientEntity = patientRepo.findById(healthCardNo)
-                .orElseThrow(() -> new DataNotFoundException("Patient is not found."));
+        // Try to find in patient table, but fall back to user entity for brand new patients
+        PatientEntity patientEntity = patientRepo.findById(healthCardNo).orElse(null);
 
+        if (patientEntity == null) {
+            // Patient exists in user table but hasn't been given a prescription yet
+            UserEntity userEntity = userRepo.findByHealthCardNo(healthCardNo)
+                    .orElseThrow(() -> new DataNotFoundException("Patient is not found."));
+            patientEntity = PatientEntity.builder()
+                    .healthCardNo(userEntity.getHealthCardNo())
+                    .userName(userEntity.getUsername())
+                    .dob(userEntity.getDob())
+                    .gender(userEntity.getGender())
+                    .build();
+        }
+
+        // Return empty list gracefully instead of throwing when no records exist yet
         List<MedicalRecordEntity> medicalRecordEntityList = medicalRecordRepo.findByPatientEntity(patientEntity)
-                .orElseThrow(() -> new RuntimeException("No medical records found."));
+                .orElse(List.of());
 
         List<MedicalRecordResponseDTO> medicalRecordResponseDTOList = medicalRecordEntityList.stream()
                 .map(a -> {
-                    MedicalRecordResponseDTO dto = modelMapper.map(a, MedicalRecordResponseDTO.class);
+                    // Manually build the DTO to avoid ModelMapper ambiguity with nested MedicalImagingEntity fields
+                    MedicalRecordResponseDTO dto = MedicalRecordResponseDTO.builder()
+                            .medicalRecordId(a.getMedicalRecordId())
+                            .createdDate(a.getCreatedDate())
+                            .doctorRegNo(a.getDoctorRegNo())
+                            .medicineInfoEntities(
+                                a.getMedicineInfoEntities() == null ? List.of() :
+                                a.getMedicineInfoEntities().stream()
+                                    .map(m -> modelMapper.map(m, com.onkar.chc.responseDto.MedicineInfoResponseDTO.class))
+                                    .toList()
+                            )
+                            .build();
                     if (a.getMedicalImagingEntity() != null) {
                         dto.setFileName(a.getMedicalImagingEntity().getFileName());
                         dto.setFileUrl(a.getMedicalImagingEntity().getFileUrl());
