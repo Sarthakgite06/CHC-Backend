@@ -110,7 +110,7 @@ public class MedicalRecordServiceImplTest {
         Mockito.when(patientRepo.save(Mockito.any(PatientEntity.class))).thenReturn(patientEntity);
         Mockito.when(medicalRecordRepo.save(Mockito.any(MedicalRecordEntity.class))).thenReturn(medicalRecordEntity);
 
-        String returnMsg=medicalRecordService.createNewMedicalRecord(medicalRecordRequestDTO,healthCardNo);
+        String returnMsg=medicalRecordService.createNewMedicalRecord(medicalRecordRequestDTO,healthCardNo, null, null, null, null, null, userEntity);
         String exMsg="Medical record created successfully.";
         Assertions.assertEquals(exMsg,returnMsg);
     }
@@ -127,7 +127,7 @@ public class MedicalRecordServiceImplTest {
         Mockito.when(modelMapper.map(Mockito.any(MedicalRecordRequestDTO.class),Mockito.any())).thenReturn(medicalRecordEntity);
         Mockito.when(userRepo.findByHealthCardNo(Mockito.anyString())).thenReturn(Optional.ofNullable(null));
 
-        Assertions.assertThrows(RuntimeException.class,()->{medicalRecordService.createNewMedicalRecord(medicalRecordRequestDTO,healthCardNo);});
+        Assertions.assertThrows(RuntimeException.class,()->{medicalRecordService.createNewMedicalRecord(medicalRecordRequestDTO,healthCardNo, null, null, null, null, null, userEntity);});
     }
 
 

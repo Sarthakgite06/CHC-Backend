@@ -19,4 +19,19 @@ public class MedicalRecordResponseDTO {
 
     private List<MedicineInfoResponseDTO> medicineInfoEntities;
 
+    private String fileName;
+
+    private String fileUrl;
+
+    private String fileType;
+
+    private Long fileSize;
+
+    private String imagingType;
+
+    private String title;
+
+    private String description;
+
+    private String hospitalName;
 }

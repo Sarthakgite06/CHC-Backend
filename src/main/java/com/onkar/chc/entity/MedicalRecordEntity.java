@@ -30,4 +30,8 @@ public class MedicalRecordEntity {
 
     @ManyToOne(cascade = CascadeType.DETACH)
     private PatientEntity patientEntity;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "imaging_id")
+    private MedicalImagingEntity medicalImagingEntity;
 }

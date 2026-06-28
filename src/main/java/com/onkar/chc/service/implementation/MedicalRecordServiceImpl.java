@@ -4,6 +4,8 @@ import com.onkar.chc.entity.MedicalRecordEntity;
 import com.onkar.chc.entity.PatientEntity;
 import com.onkar.chc.entity.UserEntity;
 import com.onkar.chc.globalException.DataNotFoundException;
+import com.onkar.chc.entity.MedicalImagingEntity;
+import com.onkar.chc.repo.MedicalImagingRepo;
 import com.onkar.chc.repo.DoctorRepo;
 import com.onkar.chc.repo.MedicalRecordRepo;
 import com.onkar.chc.repo.PatientRepo;
@@ -13,9 +15,11 @@ import com.onkar.chc.responseDto.MedicalHistoryResponseDTO;
 import com.onkar.chc.responseDto.MedicalRecordResponseDTO;
 import com.onkar.chc.responseDto.PatientResponseDTO;
 import com.onkar.chc.service.MedicalRecordService;
+import com.onkar.chc.service.FileStorageService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -35,9 +39,14 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     @Autowired
     PatientRepo patientRepo;
 
-
     @Autowired
     DoctorRepo doctorRepo;
+
+    @Autowired
+    FileStorageService fileStorageService;
+
+    @Autowired
+    MedicalImagingRepo medicalImagingRepo;
 
     @Override
     public Boolean validatePatientAndDoctor(String userName, String healthCardNo, Long doctorRegNo) {
@@ -48,7 +57,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Override
-    public String createNewMedicalRecord(MedicalRecordRequestDTO medicalRecordRequestDTO, String healthCardNo) {
+    public String createNewMedicalRecord(MedicalRecordRequestDTO medicalRecordRequestDTO, String healthCardNo, MultipartFile file, String imagingType, String title, String description, String hospitalName, UserEntity doctor) {
 
         //DTO-> ENTITY -> FULFILL -> SAVE.
         MedicalRecordEntity medicalRecordEntity = modelMapper.map(medicalRecordRequestDTO, MedicalRecordEntity.class);
@@ -83,6 +92,39 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             patientRepo.save(existingPatient);
         }
 
+        // Handle attachment file if present
+        if (file != null && !file.isEmpty()) {
+            String originalFilename = file.getOriginalFilename();
+            String extension = "";
+            if (originalFilename != null && originalFilename.lastIndexOf(".") > 0) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
+            }
+            String savedFileName = fileStorageService.storeFile(file);
+
+            // Create and save MedicalImagingEntity in medical_imaging table
+            MedicalImagingEntity imagingEntity = MedicalImagingEntity.builder()
+                    .patient(userEntity)
+                    .doctor(doctor)
+                    .healthCardNo(healthCardNo)
+                    .imagingType(imagingType != null ? imagingType : "Other")
+                    .title(title != null ? title : "Prescription Scan")
+                    .description(description)
+                    .hospitalName(hospitalName != null ? hospitalName : "General Clinic")
+                    .fileName(savedFileName)
+                    .fileType(extension.length() > 1 ? extension.substring(1).toUpperCase() : "UNKNOWN")
+                    .fileSize(file.getSize())
+                    .uploadedAt(java.time.LocalDateTime.now())
+                    .isDeleted(false)
+                    .build();
+
+            // First save to generate the ID
+            MedicalImagingEntity savedImaging = medicalImagingRepo.save(imagingEntity);
+            savedImaging.setFileUrl("/medical-imaging/download/" + savedImaging.getId());
+            savedImaging = medicalImagingRepo.save(savedImaging);
+
+            medicalRecordEntity.setMedicalImagingEntity(savedImaging);
+        }
+
         medicalRecordRepo.save(medicalRecordEntity);
 
         return "Data is saved.";
@@ -104,7 +146,20 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .orElseThrow(() -> new RuntimeException("No medical records found."));
 
         List<MedicalRecordResponseDTO> medicalRecordResponseDTOList = medicalRecordEntityList.stream()
-                .map(a -> modelMapper.map(a, MedicalRecordResponseDTO.class)).toList();
+                .map(a -> {
+                    MedicalRecordResponseDTO dto = modelMapper.map(a, MedicalRecordResponseDTO.class);
+                    if (a.getMedicalImagingEntity() != null) {
+                        dto.setFileName(a.getMedicalImagingEntity().getFileName());
+                        dto.setFileUrl(a.getMedicalImagingEntity().getFileUrl());
+                        dto.setFileType(a.getMedicalImagingEntity().getFileType());
+                        dto.setFileSize(a.getMedicalImagingEntity().getFileSize());
+                        dto.setImagingType(a.getMedicalImagingEntity().getImagingType());
+                        dto.setTitle(a.getMedicalImagingEntity().getTitle());
+                        dto.setDescription(a.getMedicalImagingEntity().getDescription());
+                        dto.setHospitalName(a.getMedicalImagingEntity().getHospitalName());
+                    }
+                    return dto;
+                }).toList();
 
         return MedicalHistoryResponseDTO.builder()
                 .patientEntity(modelMapper.map(patientEntity, PatientResponseDTO.class))

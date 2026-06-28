@@ -10,6 +10,9 @@ import com.onkar.chc.service.MedicalRecordService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.onkar.chc.entity.UserEntity;
+import org.springframework.web.multipart.MultipartFile;
+
 /**
  * Alternative (unused) implementation with self-managed logic.
  * Not annotated with @Service — the primary impl is MedicalRecordServiceImpl.
@@ -47,7 +50,7 @@ public class MedicalRecordServiceImplSelfLogic implements MedicalRecordService {
     }
 
     @Override
-    public String createNewMedicalRecord(MedicalRecordRequestDTO medicalRecordRequestDTO, String healthCardNo) {
+    public String createNewMedicalRecord(MedicalRecordRequestDTO medicalRecordRequestDTO, String healthCardNo, MultipartFile file, String imagingType, String title, String description, String hospitalName, UserEntity doctor) {
         return "";
     }
 }
