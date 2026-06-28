@@ -62,6 +62,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/user/signUp").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/user/login").permitAll()
                                 // Public endpoints (districts list for signup)
+                                .requestMatchers("/lab/debug-files").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/chc/districts").permitAll()
                                 // Role-restricted endpoints
                                 .requestMatchers(HttpMethod.POST, "/doctor/createMedicineRecord").hasRole("Doctor")

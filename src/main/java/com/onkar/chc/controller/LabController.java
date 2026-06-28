@@ -223,6 +223,22 @@ public class LabController {
         return ResponseEntity.ok("Lab report deleted successfully.");
     }
 
+    @GetMapping("/debug-files")
+    public ResponseEntity<?> debugFiles() {
+        try {
+            Path path = Paths.get("uploads").toAbsolutePath().normalize();
+            if (!Files.exists(path)) {
+                return ResponseEntity.ok("Uploads directory does not exist!");
+            }
+            List<String> files = Files.list(path)
+                    .map(p -> p.getFileName().toString() + " (" + p.toFile().length() + " bytes)")
+                    .toList();
+            return ResponseEntity.ok(files);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error listing files: " + e.getMessage());
+        }
+    }
+
     private boolean isAuthorizedToViewPatientReports(UserEntity currentUser, String healthCardId) {
         String role = currentUser.getRole().replace("ROLE_", "");
         
