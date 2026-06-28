@@ -158,10 +158,10 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
-		<!-- Spring AI -->
+		<!-- Spring AI Google Gemini -->
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-openai-spring-boot-starter</artifactId>
+			<artifactId>spring-ai-vertex-ai-gemini-spring-boot-starter</artifactId>
 		</dependency>
 
 	</dependencies>
