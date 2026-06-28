@@ -195,8 +195,8 @@ public class LabController {
         UserEntity currentUser = (UserEntity) authentication.getPrincipal();
         String role = currentUser.getRole().replace("ROLE_", "");
 
-        // Only the pathologist (specifically, the one who uploaded it) can delete it
-        if (!"Pathologist".equalsIgnoreCase(role) || !currentUser.getUsername().equalsIgnoreCase(report.getPathologistUserName())) {
+        // Only a pathologist can delete a report
+        if (!"Pathologist".equalsIgnoreCase(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied");
         }
 
