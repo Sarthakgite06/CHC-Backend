@@ -252,8 +252,8 @@ public class LabController {
             return true;
         }
         
-        // 3. Doctor and Chemist (general permission to view patient records)
-        if ("Doctor".equalsIgnoreCase(role) || "Chemist".equalsIgnoreCase(role)) {
+        // 3. Doctor (general permission to view patient records)
+        if ("Doctor".equalsIgnoreCase(role)) {
             return true;
         }
         
@@ -278,8 +278,8 @@ public class LabController {
             return currentUser.getUsername().equalsIgnoreCase(report.getPathologistUserName());
         }
         
-        // 3. Doctor and Chemist (general permission to view report)
-        if ("Doctor".equalsIgnoreCase(role) || "Chemist".equalsIgnoreCase(role)) {
+        // 3. Doctor (general permission to view report)
+        if ("Doctor".equalsIgnoreCase(role)) {
             return true;
         }
         
