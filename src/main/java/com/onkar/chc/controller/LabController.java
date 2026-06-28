@@ -2,11 +2,15 @@ package com.onkar.chc.controller;
 
 import com.onkar.chc.entity.LabReportEntity;
 import com.onkar.chc.entity.LabTestRequestEntity;
+import com.onkar.chc.entity.UserEntity;
 import com.onkar.chc.globalException.DataNotFoundException;
 import com.onkar.chc.repo.LabReportRepo;
 import com.onkar.chc.repo.LabTestRequestRepo;
+import com.onkar.chc.repo.DoctorRepo;
+import com.onkar.chc.repo.MedicalRecordRepo;
 import com.onkar.chc.requestDto.LabReportRequestDTO;
 import com.onkar.chc.requestDto.LabTestRequestDTO;
+import com.onkar.chc.responseDto.LabReportResponseDTO;
 import com.onkar.chc.service.FileStorageService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -17,6 +21,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,9 +45,15 @@ public class LabController {
     @Autowired
     private FileStorageService fileStorageService;
 
+    @Autowired
+    private DoctorRepo doctorRepo;
+
+    @Autowired
+    private MedicalRecordRepo medicalRecordRepo;
+
     // Doctor requests a lab test
     @PostMapping("/requestTest")
-    public ResponseEntity<String> requestTest(@Valid @RequestBody LabTestRequestDTO requestDTO) {
+    public ResponseEntity<LabTestRequestEntity> requestTest(@Valid @RequestBody LabTestRequestDTO requestDTO) {
         log.info("Creating lab test request by doctor: {}", requestDTO.getDoctorUserName());
         
         LabTestRequestEntity entity = LabTestRequestEntity.builder()
@@ -52,8 +64,8 @@ public class LabController {
                 .status("PENDING")
                 .build();
                 
-        labTestRequestRepo.save(entity);
-        return new ResponseEntity<>("Lab test requested successfully.", HttpStatus.CREATED);
+        LabTestRequestEntity savedEntity = labTestRequestRepo.save(entity);
+        return new ResponseEntity<>(savedEntity, HttpStatus.CREATED);
     }
 
     // Pathologist uploads a lab report with file
@@ -92,11 +104,22 @@ public class LabController {
 
     // Download lab report file
     @GetMapping("/downloadReport/{reportId}")
-    public ResponseEntity<Resource> downloadReportFile(@PathVariable Long reportId, HttpServletRequest request) {
+    public ResponseEntity<?> downloadReportFile(@PathVariable Long reportId, HttpServletRequest request) {
         log.info("Downloading file for report ID: {}", reportId);
 
         LabReportEntity report = labReportRepo.findById(reportId)
                 .orElseThrow(() -> new DataNotFoundException("Lab report not found"));
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserEntity)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+        UserEntity currentUser = (UserEntity) authentication.getPrincipal();
+
+        // Check if user is authorized to view this specific report
+        if (!isAuthorizedToViewReport(currentUser, report)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied");
+        }
 
         if (report.getAttachmentPath() == null) {
             throw new RuntimeException("No file attached to this report");
@@ -125,8 +148,104 @@ public class LabController {
     
     // Get tests for a patient
     @GetMapping("/patient/{healthCardId}/reports")
-    public ResponseEntity<List<LabReportEntity>> getReportsForPatient(@PathVariable String healthCardId) {
+    public ResponseEntity<?> getReportsForPatient(@PathVariable String healthCardId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserEntity)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+        UserEntity currentUser = (UserEntity) authentication.getPrincipal();
+
+        // Check general authorization to access this patient's reports
+        if (!isAuthorizedToViewPatientReports(currentUser, healthCardId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied");
+        }
+
         List<LabReportEntity> reports = labReportRepo.findByLabTestRequest_PatientHealthCardId(healthCardId);
-        return ResponseEntity.ok(reports);
+
+        // Filter for pathologist: they only see their own uploaded reports
+        String role = currentUser.getRole().replace("ROLE_", "");
+        if ("Pathologist".equalsIgnoreCase(role)) {
+            reports = reports.stream()
+                    .filter(r -> currentUser.getUsername().equalsIgnoreCase(r.getPathologistUserName()))
+                    .toList();
+        }
+
+        List<LabReportResponseDTO> dtos = reports.stream()
+                .map(LabReportResponseDTO::fromEntity)
+                .toList();
+
+        return ResponseEntity.ok(dtos);
+    }
+
+    private boolean isAuthorizedToViewPatientReports(UserEntity currentUser, String healthCardId) {
+        String role = currentUser.getRole().replace("ROLE_", "");
+        
+        // 1. Respective patient
+        if (currentUser.getHealthCardNo() != null && currentUser.getHealthCardNo().equalsIgnoreCase(healthCardId)) {
+            return true;
+        }
+        
+        // 2. Pathologist (can view list, but we filter list by their username in getReportsForPatient)
+        if ("Pathologist".equalsIgnoreCase(role)) {
+            return true;
+        }
+        
+        // 3. Authorized doctor
+        if ("Doctor".equalsIgnoreCase(role)) {
+            var doctorOpt = doctorRepo.findByUserName(currentUser.getUsername());
+            if (doctorOpt.isPresent()) {
+                Long doctorRegNo = doctorOpt.get().getDoctorRegiNo();
+                // Has doctor treated this patient in the past?
+                boolean hasTreated = medicalRecordRepo.existsByPatientEntity_HealthCardNoAndDoctorRegNo(healthCardId, doctorRegNo);
+                if (hasTreated) {
+                    return true;
+                }
+                // Has doctor requested any lab test for this patient?
+                boolean hasRequested = labTestRequestRepo.existsByPatientHealthCardIdAndDoctorUserName(healthCardId, currentUser.getUsername());
+                if (hasRequested) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    private boolean isAuthorizedToViewReport(UserEntity currentUser, LabReportEntity report) {
+        if (report == null || report.getLabTestRequest() == null) {
+            return false;
+        }
+        
+        String healthCardId = report.getLabTestRequest().getPatientHealthCardId();
+        String role = currentUser.getRole().replace("ROLE_", "");
+        
+        // 1. Respective patient
+        if (currentUser.getHealthCardNo() != null && currentUser.getHealthCardNo().equalsIgnoreCase(healthCardId)) {
+            return true;
+        }
+        
+        // 2. Uploading pathologist
+        if ("Pathologist".equalsIgnoreCase(role)) {
+            return currentUser.getUsername().equalsIgnoreCase(report.getPathologistUserName());
+        }
+        
+        // 3. Authorized doctor
+        if ("Doctor".equalsIgnoreCase(role)) {
+            // Did this doctor request this specific test?
+            if (currentUser.getUsername().equalsIgnoreCase(report.getLabTestRequest().getDoctorUserName())) {
+                return true;
+            }
+            // Or has this doctor treated this patient in the past?
+            var doctorOpt = doctorRepo.findByUserName(currentUser.getUsername());
+            if (doctorOpt.isPresent()) {
+                Long doctorRegNo = doctorOpt.get().getDoctorRegiNo();
+                boolean hasTreated = medicalRecordRepo.existsByPatientEntity_HealthCardNoAndDoctorRegNo(healthCardId, doctorRegNo);
+                if (hasTreated) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 }

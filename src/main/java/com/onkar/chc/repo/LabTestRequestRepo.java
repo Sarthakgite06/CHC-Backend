@@ -10,4 +10,5 @@ import java.util.List;
 public interface LabTestRequestRepo extends JpaRepository<LabTestRequestEntity, Long> {
     List<LabTestRequestEntity> findByDoctorUserName(String doctorUserName);
     List<LabTestRequestEntity> findByPatientHealthCardId(String patientHealthCardId);
+    boolean existsByPatientHealthCardIdAndDoctorUserName(String patientHealthCardId, String doctorUserName);
 }

@@ -14,7 +14,6 @@ RUN ./mvnw dependency:go-offline
 COPY src src
 
 RUN ./mvnw clean package -DskipTests
-
 # Runtime stage
 FROM eclipse-temurin:17-jre
 

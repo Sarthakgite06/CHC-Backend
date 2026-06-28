@@ -13,4 +13,5 @@ public interface MedicalRecordRepo extends JpaRepository<MedicalRecordEntity, St
 
     public Optional<List<MedicalRecordEntity>> findByPatientEntity(PatientEntity patientEntity);
 
+    boolean existsByPatientEntity_HealthCardNoAndDoctorRegNo(String healthCardNo, Long doctorRegNo);
 }
