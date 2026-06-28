@@ -189,11 +189,10 @@ public class MedicalImagingController {
         UserEntity currentUser = (UserEntity) authentication.getPrincipal();
         String role = currentUser.getRole().replace("ROLE_", "");
 
-        // Access check: Owner, Doctor or Chemist
+        // Access check: ONLY the patient (owner) can download
         boolean isOwner = currentUser.getHealthCardNo() != null && currentUser.getHealthCardNo().equalsIgnoreCase(imaging.getHealthCardNo());
-        boolean isAllowedRole = "Doctor".equalsIgnoreCase(role) || "Chemist".equalsIgnoreCase(role);
-        if (!isOwner && !isAllowedRole) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied");
+        if (!isOwner) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied: Only patients can download or preview these files");
         }
 
         Resource resource = fileStorageService.loadFileAsResource(imaging.getFileName());
