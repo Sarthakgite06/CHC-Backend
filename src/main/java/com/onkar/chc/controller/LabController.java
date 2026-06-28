@@ -28,6 +28,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -175,6 +178,49 @@ public class LabController {
                 .toList();
 
         return ResponseEntity.ok(dtos);
+    }
+
+    // Pathologist deletes a lab report
+    @DeleteMapping("/deleteReport/{reportId}")
+    public ResponseEntity<?> deleteReport(@PathVariable Long reportId) {
+        log.info("Deleting lab report ID: {}", reportId);
+
+        LabReportEntity report = labReportRepo.findById(reportId)
+                .orElseThrow(() -> new DataNotFoundException("Lab report not found"));
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserEntity)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+        UserEntity currentUser = (UserEntity) authentication.getPrincipal();
+        String role = currentUser.getRole().replace("ROLE_", "");
+
+        // Only the pathologist (specifically, the one who uploaded it) can delete it
+        if (!"Pathologist".equalsIgnoreCase(role) || !currentUser.getUsername().equalsIgnoreCase(report.getPathologistUserName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied");
+        }
+
+        // Revert status of lab test request back to PENDING
+        LabTestRequestEntity testRequest = report.getLabTestRequest();
+        if (testRequest != null) {
+            testRequest.setStatus("PENDING");
+            labTestRequestRepo.save(testRequest);
+        }
+
+        // Delete file on disk
+        if (report.getAttachmentPath() != null) {
+            try {
+                Path filePath = Paths.get("uploads").resolve(report.getAttachmentPath()).toAbsolutePath().normalize();
+                Files.deleteIfExists(filePath);
+            } catch (IOException e) {
+                log.warn("Failed to delete file from disk: {}", report.getAttachmentPath(), e);
+            }
+        }
+
+        // Delete from database
+        labReportRepo.delete(report);
+
+        return ResponseEntity.ok("Lab report deleted successfully.");
     }
 
     private boolean isAuthorizedToViewPatientReports(UserEntity currentUser, String healthCardId) {
