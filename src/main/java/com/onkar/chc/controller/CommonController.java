@@ -1,8 +1,9 @@
 package com.onkar.chc.controller;
 
+import com.onkar.chc.entity.UserEntity;
+import com.onkar.chc.repo.UserRepo;
 import com.onkar.chc.responseDto.MedicalHistoryResponseDTO;
 import com.onkar.chc.service.MedicalRecordService;
-import com.onkar.chc.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,9 @@ public class CommonController {
     @Autowired
     MedicalRecordService medicalRecordService;
 
+    @Autowired
+    UserRepo userRepo;
+
     /**
      * Get patient medical history.
      * Flexible search: provide EITHER healthCardNo OR userName (or both).
@@ -25,8 +29,6 @@ public class CommonController {
     public ResponseEntity<MedicalHistoryResponseDTO> getMedicalHistory(
             @RequestParam(required = false) String healthCardNo,
             @RequestParam(required = false) String userName) {
-
-        MedicalHistoryResponseDTO medicalHistoryResponseDTO;
 
         // Block Pathologists — they only need lab reports, not prescriptions
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -43,15 +45,17 @@ public class CommonController {
 
         Boolean isPatientValid = medicalRecordService.validatePatient(name, cardId);
         if (isPatientValid) {
-            // Prefer healthCardNo for record lookup; fall back to finding by name
             String lookupId = cardId;
             if (lookupId.isBlank() && !name.isBlank()) {
-                // If only name provided, we already validated, the validation query found the user
-                // The service already handles this via OR query
+                UserEntity user = userRepo.findByUserName(name).orElse(null);
+                if (user != null && user.getHealthCardNo() != null) {
+                    lookupId = user.getHealthCardNo();
+                }
             }
-            medicalHistoryResponseDTO = medicalRecordService.getMedicalRecord(cardId.isBlank() ? cardId : cardId);
+            MedicalHistoryResponseDTO medicalHistoryResponseDTO = medicalRecordService.getMedicalRecord(lookupId);
             return new ResponseEntity<>(medicalHistoryResponseDTO, HttpStatus.ACCEPTED);
-        } else
+        } else {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
     }
 }

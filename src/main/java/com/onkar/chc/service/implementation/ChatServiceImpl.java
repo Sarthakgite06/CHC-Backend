@@ -82,24 +82,26 @@ public class ChatServiceImpl implements ChatService {
                 "If the user asks questions about general knowledge, general science, history, geography, sports, math, coding, or any other topic unrelated to this project or healthcare, you must politely decline to answer, stating that you can only help with the Centralized Health Card System and healthcare assistance.\n\n";
 
         try {
-            if (user.getRole().contains("Patient")) {
+            String role = user.getRole() != null ? user.getRole().replace("ROLE_", "") : "";
+            if ("Patient".equalsIgnoreCase(role) || "User".equalsIgnoreCase(role)) {
                 PatientEntity patient = patientRepo.findByUserName(user.getUsername()).orElse(null);
+                String healthCardNo = patient != null ? patient.getHealthCardNo() : user.getHealthCardNo();
                 
-                if (patient == null) {
-                    return basePrompt + " (Note: Patient profile data not found for this user.)";
-                }
-                
-                String profile = String.format("HealthCardNo: %s, Name: %s, DOB: %s, Age: %s, Gender: %s, BloodPressure: %s",
-                        patient.getHealthCardNo(), patient.getUserName(), patient.getDob(), patient.getAge(), patient.getGender(), patient.getBloodPressure());
+                String profile = String.format("HealthCardNo: %s, Name: %s, DOB: %s, Gender: %s, BloodGroup: %s",
+                        healthCardNo, user.getUsername(), user.getDob(), user.getGender(), user.getBloodGroup());
 
-                List<MedicalRecordEntity> records = medicalRecordRepo.findByPatientEntity(patient).orElse(List.of());
+                List<MedicalRecordEntity> records = patient != null 
+                        ? medicalRecordRepo.findByPatientEntity(patient).orElse(List.of()) 
+                        : List.of();
                 StringBuilder prescriptionsBuf = new StringBuilder();
                 for (MedicalRecordEntity r : records) {
                     prescriptionsBuf.append(String.format("[RecordID: %s, Date: %s, DoctorReg: %s] ",
                             r.getMedicalRecordId(), r.getCreatedDate(), r.getDoctorRegNo()));
                 }
 
-                List<LabReportEntity> labs = labReportRepo.findByLabTestRequest_PatientHealthCardId(patient.getHealthCardNo());
+                List<LabReportEntity> labs = (healthCardNo != null && !healthCardNo.isBlank()) 
+                        ? labReportRepo.findByLabTestRequest_PatientHealthCardId(healthCardNo) 
+                        : List.of();
                 StringBuilder labBuf = new StringBuilder();
                 for (LabReportEntity lab : labs) {
                     labBuf.append(String.format("[Findings: %s, Remarks: %s, Date: %s] ",
@@ -111,29 +113,35 @@ public class ChatServiceImpl implements ChatService {
                         "Prescriptions: " + (prescriptionsBuf.length() > 0 ? prescriptionsBuf.toString() : "None") + "\n" +
                         "Lab Reports: " + (labBuf.length() > 0 ? labBuf.toString() : "None");
 
-            } else if (user.getRole().contains("Doctor")) {
+            } else if ("Doctor".equalsIgnoreCase(role)) {
                 if (request.getTargetHealthCardId() == null || request.getTargetHealthCardId().isBlank()) {
                     return basePrompt + "You are assisting a doctor. The doctor has not selected a patient yet. " +
                             "Tell the doctor to search for a patient using their Health Card ID to view their records.";
                 }
 
                 PatientEntity patient = patientRepo.findById(request.getTargetHealthCardId()).orElse(null);
+                UserEntity patientUser = userRepo.findByHealthCardNo(request.getTargetHealthCardId()).orElse(null);
                         
-                if (patient == null) {
+                if (patient == null && patientUser == null) {
                     return basePrompt + "You are assisting a doctor. The patient with Health Card ID: " + request.getTargetHealthCardId() + " was not found.";
                 }
                 
-                String profile = String.format("HealthCardNo: %s, Name: %s, DOB: %s, Age: %s, Gender: %s, BloodPressure: %s",
-                        patient.getHealthCardNo(), patient.getUserName(), patient.getDob(), patient.getAge(), patient.getGender(), patient.getBloodPressure());
+                String profile = patient != null 
+                        ? String.format("HealthCardNo: %s, Name: %s, DOB: %s, Age: %s, Gender: %s, BloodPressure: %s",
+                                patient.getHealthCardNo(), patient.getUserName(), patient.getDob(), patient.getAge(), patient.getGender(), patient.getBloodPressure())
+                        : String.format("HealthCardNo: %s, Name: %s, DOB: %s, Gender: %s, BloodGroup: %s",
+                                patientUser.getHealthCardNo(), patientUser.getUsername(), patientUser.getDob(), patientUser.getGender(), patientUser.getBloodGroup());
 
-                List<MedicalRecordEntity> records = medicalRecordRepo.findByPatientEntity(patient).orElse(List.of());
+                List<MedicalRecordEntity> records = patient != null 
+                        ? medicalRecordRepo.findByPatientEntity(patient).orElse(List.of()) 
+                        : List.of();
                 StringBuilder prescriptionsBuf = new StringBuilder();
                 for (MedicalRecordEntity r : records) {
                     prescriptionsBuf.append(String.format("[RecordID: %s, Date: %s, DoctorReg: %s] ",
                             r.getMedicalRecordId(), r.getCreatedDate(), r.getDoctorRegNo()));
                 }
 
-                List<LabReportEntity> labs = labReportRepo.findByLabTestRequest_PatientHealthCardId(patient.getHealthCardNo());
+                List<LabReportEntity> labs = labReportRepo.findByLabTestRequest_PatientHealthCardId(request.getTargetHealthCardId());
                 StringBuilder labBuf = new StringBuilder();
                 for (LabReportEntity lab : labs) {
                     labBuf.append(String.format("[Findings: %s, Remarks: %s, Date: %s] ",
