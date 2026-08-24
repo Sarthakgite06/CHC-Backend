@@ -15,6 +15,6 @@ services:
       - key: SPRING_DATASOURCE_USERNAME
         value: chc_db_vvrw_user
       - key: SPRING_DATASOURCE_PASSWORD
-        value: diFtpzqBrTi5UwdnrOqKY8TJQEpxpFhu
+        value: d1FtpzqBrTi5UwdnrOqKY8TJQEpxpFhu
       - key: GEMINI_API_KEY
         sync: false
