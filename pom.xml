@@ -84,11 +84,10 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- H2 in-memory database for testing -->
+		<!-- H2 in-memory database for local/testing fallback -->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
