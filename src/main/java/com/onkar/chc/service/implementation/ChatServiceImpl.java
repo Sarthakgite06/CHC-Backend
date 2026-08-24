@@ -89,15 +89,27 @@ public class ChatServiceImpl implements ChatService {
                     return basePrompt + " (Note: Patient profile data not found for this user.)";
                 }
                 
-                String profile = mapper.writeValueAsString(patient);
+                String profile = String.format("HealthCardNo: %s, Name: %s, DOB: %s, Age: %s, Gender: %s, BloodPressure: %s",
+                        patient.getHealthCardNo(), patient.getUserName(), patient.getDob(), patient.getAge(), patient.getGender(), patient.getBloodPressure());
+
                 List<MedicalRecordEntity> records = medicalRecordRepo.findByPatientEntity(patient).orElse(List.of());
-                String prescriptions = mapper.writeValueAsString(records);
-                String labReports = mapper.writeValueAsString(labReportRepo.findByLabTestRequest_PatientHealthCardId(patient.getHealthCardNo()));
+                StringBuilder prescriptionsBuf = new StringBuilder();
+                for (MedicalRecordEntity r : records) {
+                    prescriptionsBuf.append(String.format("[RecordID: %s, Date: %s, DoctorReg: %s] ",
+                            r.getMedicalRecordId(), r.getCreatedDate(), r.getDoctorRegNo()));
+                }
+
+                List<LabReportEntity> labs = labReportRepo.findByLabTestRequest_PatientHealthCardId(patient.getHealthCardNo());
+                StringBuilder labBuf = new StringBuilder();
+                for (LabReportEntity lab : labs) {
+                    labBuf.append(String.format("[Findings: %s, Remarks: %s, Date: %s] ",
+                            lab.getFindings(), lab.getRemarks(), lab.getReportDate()));
+                }
 
                 return basePrompt + "Here is the patient's data:\n" +
                         "Profile: " + profile + "\n" +
-                        "Prescriptions: " + prescriptions + "\n" +
-                        "Lab Reports: " + labReports;
+                        "Prescriptions: " + (prescriptionsBuf.length() > 0 ? prescriptionsBuf.toString() : "None") + "\n" +
+                        "Lab Reports: " + (labBuf.length() > 0 ? labBuf.toString() : "None");
 
             } else if (user.getRole().contains("Doctor")) {
                 if (request.getTargetHealthCardId() == null || request.getTargetHealthCardId().isBlank()) {
@@ -111,18 +123,30 @@ public class ChatServiceImpl implements ChatService {
                     return basePrompt + "You are assisting a doctor. The patient with Health Card ID: " + request.getTargetHealthCardId() + " was not found.";
                 }
                 
-                String profile = mapper.writeValueAsString(patient);
+                String profile = String.format("HealthCardNo: %s, Name: %s, DOB: %s, Age: %s, Gender: %s, BloodPressure: %s",
+                        patient.getHealthCardNo(), patient.getUserName(), patient.getDob(), patient.getAge(), patient.getGender(), patient.getBloodPressure());
+
                 List<MedicalRecordEntity> records = medicalRecordRepo.findByPatientEntity(patient).orElse(List.of());
-                String prescriptions = mapper.writeValueAsString(records);
-                String labReports = mapper.writeValueAsString(labReportRepo.findByLabTestRequest_PatientHealthCardId(patient.getHealthCardNo()));
+                StringBuilder prescriptionsBuf = new StringBuilder();
+                for (MedicalRecordEntity r : records) {
+                    prescriptionsBuf.append(String.format("[RecordID: %s, Date: %s, DoctorReg: %s] ",
+                            r.getMedicalRecordId(), r.getCreatedDate(), r.getDoctorRegNo()));
+                }
+
+                List<LabReportEntity> labs = labReportRepo.findByLabTestRequest_PatientHealthCardId(patient.getHealthCardNo());
+                StringBuilder labBuf = new StringBuilder();
+                for (LabReportEntity lab : labs) {
+                    labBuf.append(String.format("[Findings: %s, Remarks: %s, Date: %s] ",
+                            lab.getFindings(), lab.getRemarks(), lab.getReportDate()));
+                }
 
                 return basePrompt + "You are assisting a doctor. The doctor is querying about a patient with Health Card ID: " + request.getTargetHealthCardId() + ".\n" +
                         "Here is the patient's data:\n" +
                         "Profile: " + profile + "\n" +
-                        "Prescriptions: " + prescriptions + "\n" +
-                        "Lab Reports: " + labReports;
+                        "Prescriptions: " + (prescriptionsBuf.length() > 0 ? prescriptionsBuf.toString() : "None") + "\n" +
+                        "Lab Reports: " + (labBuf.length() > 0 ? labBuf.toString() : "None");
             }
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             log.error("Failed to parse data for context", e);
             return basePrompt + " (Error loading patient data into context)";
         }

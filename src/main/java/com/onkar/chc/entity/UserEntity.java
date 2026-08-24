@@ -80,8 +80,9 @@ public class UserEntity implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<SimpleGrantedAuthority> simpleGrantedAuthorityList=new ArrayList<>();
-            simpleGrantedAuthorityList.add(new SimpleGrantedAuthority("ROLE_"+this.role));
+        List<SimpleGrantedAuthority> simpleGrantedAuthorityList = new ArrayList<>();
+        String roleName = (this.role != null && this.role.startsWith("ROLE_")) ? this.role.substring(5) : this.role;
+        simpleGrantedAuthorityList.add(new SimpleGrantedAuthority("ROLE_" + roleName));
         return simpleGrantedAuthorityList;
     }
 

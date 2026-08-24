@@ -9,8 +9,6 @@ COPY mvnw .
 COPY mvnw.cmd .
 RUN chmod +x mvnw
 
-RUN ./mvnw dependency:go-offline
-
 COPY src src
 
 RUN ./mvnw clean package -DskipTests
