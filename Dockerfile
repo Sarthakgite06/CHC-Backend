@@ -6,7 +6,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src src
 
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests --batch-mode -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.count=5
 
 # Runtime stage
 FROM eclipse-temurin:17-jre
