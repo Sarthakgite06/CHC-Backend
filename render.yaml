@@ -11,7 +11,7 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: SPRING_DATASOURCE_URL
-        value: jdbc:postgresql://dpg-d9tmhh142hec738k4q90-a:5432/chc_db_vvrw
+        value: jdbc:postgresql://dpg-d9tmhh142hec738k4q90-a.singapore-postgres.render.com:5432/chc_db_vvrw?sslmode=require
       - key: SPRING_DATASOURCE_USERNAME
         value: chc_db_vvrw_user
       - key: SPRING_DATASOURCE_PASSWORD
