@@ -101,7 +101,8 @@ public class MedicalRecordServiceImplTest {
 
         Mockito.when(userRepo.getUserDataForValidation(userName, healthCardNo)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(DataNotFoundException.class, () -> medicalRecordService.validatePatient(userName, healthCardNo));
+        Assertions.assertThrows(DataNotFoundException.class,
+                () -> medicalRecordService.validatePatient(userName, healthCardNo));
     }
 
     @Test
@@ -118,7 +119,8 @@ public class MedicalRecordServiceImplTest {
         Mockito.when(patientRepo.save(any(PatientEntity.class))).thenReturn(patientEntity);
         Mockito.when(medicalRecordRepo.save(any(MedicalRecordEntity.class))).thenReturn(medicalRecordEntity);
 
-        String returnMsg = medicalRecordService.createNewMedicalRecord(medicalRecordRequestDTO, healthCardNo, null, null, null, null, null, userEntity);
+        String returnMsg = medicalRecordService.createNewMedicalRecord(medicalRecordRequestDTO, healthCardNo, null,
+                null, null, null, null, userEntity);
         Assertions.assertEquals("Data is saved.", returnMsg);
     }
 
@@ -141,7 +143,8 @@ public class MedicalRecordServiceImplTest {
         Mockito.when(medicalImagingRepo.save(any(MedicalImagingEntity.class))).thenReturn(imagingEntity);
         Mockito.when(medicalRecordRepo.save(any(MedicalRecordEntity.class))).thenReturn(medicalRecordEntity);
 
-        String returnMsg = medicalRecordService.createNewMedicalRecord(medicalRecordRequestDTO, healthCardNo, file, "X-Ray", "Chest X-Ray", "Clear lungs", "City Hospital", userEntity);
+        String returnMsg = medicalRecordService.createNewMedicalRecord(medicalRecordRequestDTO, healthCardNo, file,
+                "X-Ray", "Chest X-Ray", "Clear lungs", "City Hospital", userEntity);
         Assertions.assertEquals("Data is saved.", returnMsg);
     }
 
@@ -155,7 +158,9 @@ public class MedicalRecordServiceImplTest {
         Mockito.when(modelMapper.map(any(MedicalRecordRequestDTO.class), any())).thenReturn(medicalRecordEntity);
         Mockito.when(userRepo.findByHealthCardNo(healthCardNo)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(RuntimeException.class, () -> medicalRecordService.createNewMedicalRecord(medicalRecordRequestDTO, healthCardNo, null, null, null, null, null, userEntity));
+        Assertions.assertThrows(RuntimeException.class,
+                () -> medicalRecordService.createNewMedicalRecord(medicalRecordRequestDTO, healthCardNo, null, null,
+                        null, null, null, userEntity));
     }
 
     @Test
