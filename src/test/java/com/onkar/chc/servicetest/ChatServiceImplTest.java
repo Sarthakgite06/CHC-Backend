@@ -23,6 +23,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 public class ChatServiceImplTest {
 
     @Mock
@@ -93,6 +94,7 @@ public class ChatServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     public void testChatAIFallbackOnError() {
         UserEntity user = UserEntity.builder()
                 .userName("Onkar")

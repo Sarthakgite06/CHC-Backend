@@ -1,9 +1,7 @@
 package com.onkar.chc.controllertest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.onkar.chc.entity.LabTestRequestEntity;
 import com.onkar.chc.entity.UserEntity;
-import com.onkar.chc.repo.LabTestRequestRepo;
 import com.onkar.chc.requestDto.LabTestRequestDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +15,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@SuppressWarnings("null")
 public class LabControllerTest {
 
     @Autowired
@@ -30,9 +30,6 @@ public class LabControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Autowired
-    private LabTestRequestRepo labTestRequestRepo;
 
     @Test
     public void testRequestTestUnauthorized() throws Exception {
@@ -80,6 +77,43 @@ public class LabControllerTest {
     @Test
     public void testGetReportsForPatientUnauthorized() throws Exception {
         mockMvc.perform(get("/lab/patient/PUN00000001/reports"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testGetReportsForPatientAuthorizedDoctor() throws Exception {
+        UserEntity doctor = UserEntity.builder()
+                .userName("dr_smith")
+                .role("Doctor")
+                .build();
+
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                doctor,
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_Doctor"))
+        );
+
+        mockMvc.perform(get("/lab/patient/PUN00000001/reports")
+                .with(authentication(auth)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    public void testDebugFiles() throws Exception {
+        mockMvc.perform(get("/lab/debug-files"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testDownloadReportUnauthorized() throws Exception {
+        mockMvc.perform(get("/lab/downloadReport/99999"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testDeleteReportUnauthorized() throws Exception {
+        mockMvc.perform(delete("/lab/deleteReport/99999"))
                 .andExpect(status().isUnauthorized());
     }
 }

@@ -8,7 +8,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class FileStorageServiceTest {

@@ -5,7 +5,6 @@ import com.onkar.chc.entity.UserEntity;
 import com.onkar.chc.helper.Messages;
 import com.onkar.chc.requestDto.MedicalRecordRequestDTO;
 import com.onkar.chc.service.MedicalRecordService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

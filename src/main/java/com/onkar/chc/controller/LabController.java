@@ -6,8 +6,6 @@ import com.onkar.chc.entity.UserEntity;
 import com.onkar.chc.globalException.DataNotFoundException;
 import com.onkar.chc.repo.LabReportRepo;
 import com.onkar.chc.repo.LabTestRequestRepo;
-import com.onkar.chc.repo.DoctorRepo;
-import com.onkar.chc.repo.MedicalRecordRepo;
 import com.onkar.chc.requestDto.LabReportRequestDTO;
 import com.onkar.chc.requestDto.LabTestRequestDTO;
 import com.onkar.chc.responseDto.LabReportResponseDTO;
@@ -47,12 +45,6 @@ public class LabController {
 
     @Autowired
     private FileStorageService fileStorageService;
-
-    @Autowired
-    private DoctorRepo doctorRepo;
-
-    @Autowired
-    private MedicalRecordRepo medicalRecordRepo;
 
     // Doctor requests a lab test
     @PostMapping("/requestTest")

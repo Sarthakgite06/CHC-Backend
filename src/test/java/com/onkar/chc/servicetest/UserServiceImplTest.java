@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 public class UserServiceImplTest {
 
     @Mock

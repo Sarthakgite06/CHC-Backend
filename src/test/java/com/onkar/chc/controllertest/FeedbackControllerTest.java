@@ -14,11 +14,13 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@SuppressWarnings("null")
 public class FeedbackControllerTest {
 
     @Autowired
@@ -67,5 +69,20 @@ public class FeedbackControllerTest {
                 .content(objectMapper.writeValueAsString(feedback)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.msg").value("Feedback submitted successfully"));
+    }
+
+    @Test
+    @WithMockUser(username = "feedback_user", roles = {"Patient"})
+    public void testGetMyFeedbacksSuccess() throws Exception {
+        mockMvc.perform(get("/feedback/my"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    @WithMockUser(username = "feedback_user", roles = {"Patient"})
+    public void testGetDoctorFeedbacksForbiddenForPatient() throws Exception {
+        mockMvc.perform(get("/feedback/doctor"))
+                .andExpect(status().isForbidden());
     }
 }

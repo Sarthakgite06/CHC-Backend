@@ -5,9 +5,7 @@ import com.onkar.chc.globalException.DataNotFoundException;
 import com.onkar.chc.repo.*;
 import com.onkar.chc.requestDto.MedicalRecordRequestDTO;
 import com.onkar.chc.requestDto.PatientRequestDTO;
-import com.onkar.chc.requestDto.UserRequestDTO;
 import com.onkar.chc.responseDto.MedicalHistoryResponseDTO;
-import com.onkar.chc.responseDto.UserResponseDTO;
 import com.onkar.chc.service.FileStorageService;
 import com.onkar.chc.service.implementation.MedicalRecordServiceImpl;
 import org.junit.jupiter.api.Assertions;
@@ -29,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 public class MedicalRecordServiceImplTest {
 
     @Mock

@@ -12,10 +12,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@SuppressWarnings("null")
 public class UserControllerTest {
 
     @Autowired
@@ -79,5 +81,15 @@ public class UserControllerTest {
         mockMvc.perform(get("/user/getDoctorRegNo")
                 .param("userName", "non_doctor_user"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testUpdateUserDataUnauthorized() throws Exception {
+        UserRequestDTO userRequest = new UserRequestDTO();
+        mockMvc.perform(put("/user/updateUserData")
+                .param("id", "1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userRequest)))
+                .andExpect(status().isUnauthorized());
     }
 }
