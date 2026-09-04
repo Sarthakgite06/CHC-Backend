@@ -56,7 +56,7 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(f -> f.disable()))
                 .authorizeHttpRequests(
                         auth -> auth
-                                .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/", "/actuator/**").permitAll()
                                 .requestMatchers("/h2-console/**").permitAll()
                                 // Auth endpoints
                                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()

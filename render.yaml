@@ -5,6 +5,7 @@ services:
     dockerfilePath: Dockerfile
     plan: free
     region: singapore
+    healthCheckPath: /actuator/health
     envVars:
       - key: PORT
         value: 8081
