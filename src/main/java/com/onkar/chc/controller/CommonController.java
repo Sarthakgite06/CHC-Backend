@@ -55,7 +55,7 @@ public class CommonController {
             MedicalHistoryResponseDTO medicalHistoryResponseDTO = medicalRecordService.getMedicalRecord(lookupId);
             return new ResponseEntity<>(medicalHistoryResponseDTO, HttpStatus.ACCEPTED);
         } else {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
     }
 }

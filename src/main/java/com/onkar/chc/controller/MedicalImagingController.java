@@ -30,6 +30,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/medical-imaging")
 @Slf4j
+@SuppressWarnings("null")
 public class MedicalImagingController {
 
     @Autowired

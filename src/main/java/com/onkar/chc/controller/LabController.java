@@ -6,7 +6,6 @@ import com.onkar.chc.entity.UserEntity;
 import com.onkar.chc.globalException.DataNotFoundException;
 import com.onkar.chc.repo.LabReportRepo;
 import com.onkar.chc.repo.LabTestRequestRepo;
-import com.onkar.chc.requestDto.LabReportRequestDTO;
 import com.onkar.chc.requestDto.LabTestRequestDTO;
 import com.onkar.chc.responseDto.LabReportResponseDTO;
 import com.onkar.chc.service.FileStorageService;
@@ -35,6 +34,7 @@ import java.util.List;
 @RequestMapping("/lab")
 @Validated
 @Slf4j
+@SuppressWarnings("null")
 public class LabController {
 
     @Autowired

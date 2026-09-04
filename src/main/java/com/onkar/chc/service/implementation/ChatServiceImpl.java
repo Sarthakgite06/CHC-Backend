@@ -1,6 +1,5 @@
 package com.onkar.chc.service.implementation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.onkar.chc.entity.*;
@@ -20,6 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class ChatServiceImpl implements ChatService {
 
         private final ChatClient.Builder chatClientBuilder;

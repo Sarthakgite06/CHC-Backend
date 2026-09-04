@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 
 @Service
+@SuppressWarnings({"null", "unused"})
 public class UserServiceImpl implements UserService {
 
     Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
@@ -66,6 +67,7 @@ public class UserServiceImpl implements UserService {
 
         UserEntity save = userRepo.save(userEntity);
 
+        String msg;
         if (save != null) {
             String role = userRequestDTO.getRole();
             if (role != null) {
@@ -91,10 +93,6 @@ public class UserServiceImpl implements UserService {
                     pathologistRepo.save(pathologist);
                 }
             }
-        }
-
-        String msg;
-        if (save != null) {
             msg = "User registered successfully. Your Health Card ID: " + healthCardId;
             log.info("User registered successfully: {} | HealthCard: {}", save.getUsername(), healthCardId);
         } else {

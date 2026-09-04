@@ -16,6 +16,7 @@ import java.util.UUID;
 
 @Service
 @Slf4j
+@SuppressWarnings("null")
 public class FileStorageService {
 
     private final Path fileStorageLocation;

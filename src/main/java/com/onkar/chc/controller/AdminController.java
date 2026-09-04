@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin")
+@SuppressWarnings("null")
 public class AdminController {
 
     @Autowired

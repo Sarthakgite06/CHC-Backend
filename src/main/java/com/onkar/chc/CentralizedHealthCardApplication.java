@@ -63,6 +63,7 @@ public class CentralizedHealthCardApplication {
 	 * Admin has no signup — only this seeded account exists.
 	 */
 	@Bean
+	@SuppressWarnings("null")
 	CommandLineRunner seedAdmin(UserRepo userRepo, BCryptPasswordEncoder passwordEncoder) {
 		return args -> {
 			// Only seed if admin doesn't already exist

@@ -20,6 +20,7 @@ import com.onkar.chc.entity.DoctorEntity;
 
 @RestController
 @RequestMapping("/feedback")
+@SuppressWarnings("null")
 public class FeedbackController {
 
     @Autowired

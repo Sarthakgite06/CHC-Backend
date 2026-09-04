@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@SuppressWarnings("null")
 public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Autowired
@@ -132,7 +133,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Override
     public Boolean validatePatient(String userName, String healthCardNo) {
-        UserEntity userData = userRepo.getUserDataForValidation(userName, healthCardNo)
+        userRepo.getUserDataForValidation(userName, healthCardNo)
                 .orElseThrow(() -> new DataNotFoundException("Patient details are invalid."));
         return true;
     }
