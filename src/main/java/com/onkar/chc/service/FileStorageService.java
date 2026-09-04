@@ -41,6 +41,14 @@ public class FileStorageService {
         if (dotIndex > 0) {
             fileExtension = originalFileName.substring(dotIndex);
         }
+
+        // Reject dangerous executable and script extensions
+        java.util.List<String> dangerousExtensions = java.util.List.of(
+                ".exe", ".bat", ".cmd", ".sh", ".bin", ".vbs", ".js", ".msi", ".jar", ".com", ".pif", ".scr"
+        );
+        if (dangerousExtensions.contains(fileExtension.toLowerCase())) {
+            throw new RuntimeException("Dangerous file type not allowed: " + fileExtension);
+        }
         
         String newFileName = UUID.randomUUID().toString() + fileExtension;
 

@@ -12,10 +12,12 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: SPRING_DATASOURCE_URL
-        value: jdbc:postgresql://dpg-d9tmhh142hec738k4q90-a.singapore-postgres.render.com:5432/chc_db_vvrw?sslmode=require
+        sync: false
       - key: SPRING_DATASOURCE_USERNAME
-        value: chc_db_vvrw_user
+        sync: false
       - key: SPRING_DATASOURCE_PASSWORD
-        value: d1FtpzqBrTi5UwdnrOqKY8TJQEpxpFhu
+        sync: false
+      - key: JWT_SECRET
+        sync: false
       - key: GEMINI_API_KEY
         sync: false

@@ -26,4 +26,11 @@ public class HomeControllerTest {
                 .andExpect(jsonPath("$.service").value("Centralized Health Card API"))
                 .andExpect(jsonPath("$.version").value("1.0.0"));
     }
+
+    @Test
+    public void testActuatorHealthEndpoint() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"));
+    }
 }

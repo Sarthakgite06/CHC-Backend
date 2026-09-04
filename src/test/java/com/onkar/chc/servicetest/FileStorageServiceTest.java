@@ -82,10 +82,24 @@ public class FileStorageServiceTest {
         String storedFileName = fileStorageService.storeFile(file);
         Assertions.assertNotNull(storedFileName);
 
-        // Clean up
         File savedFile = Paths.get("uploads", storedFileName).toFile();
         if (savedFile.exists()) {
             savedFile.delete();
         }
+    }
+
+    @Test
+    public void testStoreDangerousExtensionThrowsException() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "malicious.exe",
+                "application/octet-stream",
+                "dangerous executable code".getBytes()
+        );
+
+        RuntimeException ex = Assertions.assertThrows(RuntimeException.class, () -> {
+            fileStorageService.storeFile(file);
+        });
+        Assertions.assertTrue(ex.getMessage().contains("Dangerous file type not allowed"));
     }
 }
