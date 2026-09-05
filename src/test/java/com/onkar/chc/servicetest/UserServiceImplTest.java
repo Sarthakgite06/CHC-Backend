@@ -9,12 +9,9 @@ import com.onkar.chc.service.implementation.UserServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.ThrowingConsumer;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
@@ -22,7 +19,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.onkar.chc.service.HealthCardIdGenerator;
 
 import java.util.Optional;
-import java.util.concurrent.Executor;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceImplTest {
@@ -44,6 +40,7 @@ public class UserServiceImplTest {
 
 
     @Test
+    @SuppressWarnings("null")
     public void signUPTest(){
 
         UserRequestDTO userDTO = getUserDTO();
@@ -60,6 +57,7 @@ public class UserServiceImplTest {
 
     }
     @Test
+    @SuppressWarnings("null")
     public void signUPNotSaveTest(){
 
         UserRequestDTO userDTO = getUserDTO();
@@ -83,7 +81,6 @@ public class UserServiceImplTest {
         String password="Onkar123";
 
         UserEntity userEntity=getUserEntity();
-        UserResponseDTO userResponseDTO=getUserResponseDTO();
 
         Mockito.when(userRepo.findByUserName(Mockito.anyString())).thenReturn(Optional.ofNullable(userEntity));
         Mockito.when(passwordEncoder.matches(Mockito.any(), Mockito.any())).thenReturn(true);
@@ -112,12 +109,12 @@ public class UserServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     public void updateUserDataTest(){
 
         Integer id=1;
         UserRequestDTO userRequestDTO=getUserDTO();
         UserEntity userEntity=getUserEntity();
-        UserResponseDTO userResponseDTO = getUserResponseDTO();
 
         Mockito.when(userRepo.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(userEntity));
         Mockito.when(passwordEncoder.encode(Mockito.any())).thenReturn("hashedPassword");

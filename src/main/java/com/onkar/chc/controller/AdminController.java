@@ -192,6 +192,7 @@ public class AdminController {
      * Admin responds to a feedback ticket
      */
     @PutMapping("/feedbacks/{id}/respond")
+    @SuppressWarnings("null")
     public ResponseEntity<Map<String, String>> respondToFeedback(
             @PathVariable String id,
             @RequestBody Map<String, String> body) {
@@ -214,6 +215,7 @@ public class AdminController {
      * Admin is a monitoring platform — team members can self-register through this.
      */
     @PostMapping("/create-member")
+    @SuppressWarnings("null")
     public ResponseEntity<Map<String, String>> createAdminMember(@RequestBody Map<String, String> body) {
         String userName = body.get("userName");
         String email = body.get("email");

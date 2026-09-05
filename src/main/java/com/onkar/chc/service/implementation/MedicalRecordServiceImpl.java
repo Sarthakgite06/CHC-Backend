@@ -57,6 +57,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Override
+    @SuppressWarnings("null")
     public String createNewMedicalRecord(MedicalRecordRequestDTO medicalRecordRequestDTO, String healthCardNo, MultipartFile file, String imagingType, String title, String description, String hospitalName, UserEntity doctor) {
 
         //DTO-> ENTITY -> FULFILL -> SAVE.
@@ -132,13 +133,14 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Override
     public Boolean validatePatient(String userName, String healthCardNo) {
-        UserEntity userData = userRepo.getUserDataForValidation(userName, healthCardNo)
+        userRepo.getUserDataForValidation(userName, healthCardNo)
                 .orElseThrow(() -> new DataNotFoundException("Patient details are invalid."));
         return true;
     }
 
 
     @Override
+    @SuppressWarnings("null")
     public MedicalHistoryResponseDTO getMedicalRecord(String healthCardNo) {
         // Try to find in patient table, but fall back to user entity for brand new patients
         PatientEntity patientEntity = patientRepo.findById(healthCardNo).orElse(null);

@@ -43,6 +43,7 @@ public class MedicalImagingController {
 
     // POST /medical-imaging/upload
     @PostMapping("/upload")
+    @SuppressWarnings("null")
     public ResponseEntity<?> uploadImaging(
             @RequestParam("file") MultipartFile file,
             @RequestParam("healthCardNo") String healthCardNo,
@@ -218,6 +219,7 @@ public class MedicalImagingController {
 
     // DELETE /medical-imaging/{id}
     @DeleteMapping("/{id}")
+    @SuppressWarnings("null")
     public ResponseEntity<?> deleteImagingRecord(@PathVariable Long id) {
         log.info("Deleting imaging record ID: {}", id);
 

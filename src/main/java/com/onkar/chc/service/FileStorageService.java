@@ -60,6 +60,7 @@ public class FileStorageService {
         }
     }
 
+    @SuppressWarnings("null")
     public Resource loadFileAsResource(String fileName) {
         try {
             Path filePath = this.fileStorageLocation.resolve(fileName).normalize();

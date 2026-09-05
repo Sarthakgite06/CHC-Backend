@@ -49,6 +49,7 @@ public class UserServiceImpl implements UserService {
     HealthCardIdGenerator healthCardIdGenerator;
 
     @Override
+    @SuppressWarnings({"null", "unused"})
     public String signUp(UserRequestDTO userRequestDTO) {
 
         UserEntity userEntity = modelMapper.map(userRequestDTO, UserEntity.class);
@@ -91,18 +92,13 @@ public class UserServiceImpl implements UserService {
                     pathologistRepo.save(pathologist);
                 }
             }
-        }
 
-        String msg;
-        if (save != null) {
-            msg = "User registered successfully. Your Health Card ID: " + healthCardId;
             log.info("User registered successfully: {} | HealthCard: {}", save.getUsername(), healthCardId);
+            return "User registered successfully. Your Health Card ID: " + healthCardId;
         } else {
-            msg = "User is not registered.";
             log.info("User registration failed.");
+            return "User is not registered.";
         }
-
-        return msg;
     }
 
     @Override
@@ -124,6 +120,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @SuppressWarnings("null")
     public UserResponseDTO getUserData(Integer id) {
         UserEntity userEntity = userRepo.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("User is not found."));
@@ -131,6 +128,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @SuppressWarnings("null")
     public String updateUserData(Integer userId, UserRequestDTO userRequestDTO) {
         UserEntity userEntity = userRepo.findById(userId)
                 .orElseThrow(() -> new DataNotFoundException("User not found"));

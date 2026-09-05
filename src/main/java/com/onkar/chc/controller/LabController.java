@@ -6,9 +6,6 @@ import com.onkar.chc.entity.UserEntity;
 import com.onkar.chc.globalException.DataNotFoundException;
 import com.onkar.chc.repo.LabReportRepo;
 import com.onkar.chc.repo.LabTestRequestRepo;
-import com.onkar.chc.repo.DoctorRepo;
-import com.onkar.chc.repo.MedicalRecordRepo;
-import com.onkar.chc.requestDto.LabReportRequestDTO;
 import com.onkar.chc.requestDto.LabTestRequestDTO;
 import com.onkar.chc.responseDto.LabReportResponseDTO;
 import com.onkar.chc.service.FileStorageService;
@@ -48,14 +45,9 @@ public class LabController {
     @Autowired
     private FileStorageService fileStorageService;
 
-    @Autowired
-    private DoctorRepo doctorRepo;
-
-    @Autowired
-    private MedicalRecordRepo medicalRecordRepo;
-
     // Doctor requests a lab test
     @PostMapping("/requestTest")
+    @SuppressWarnings("null")
     public ResponseEntity<LabTestRequestEntity> requestTest(@Valid @RequestBody LabTestRequestDTO requestDTO) {
         log.info("Creating lab test request by doctor: {}", requestDTO.getDoctorUserName());
         
@@ -73,6 +65,7 @@ public class LabController {
 
     // Pathologist uploads a lab report with file
     @PostMapping("/uploadReport")
+    @SuppressWarnings("null")
     public ResponseEntity<String> uploadReport(
             @RequestParam("labTestRequestId") Long labTestRequestId,
             @RequestParam("pathologistUserName") String pathologistUserName,
@@ -107,6 +100,7 @@ public class LabController {
 
     // Download lab report file
     @GetMapping("/downloadReport/{reportId}")
+    @SuppressWarnings("null")
     public ResponseEntity<?> downloadReportFile(@PathVariable Long reportId, HttpServletRequest request) {
         log.info("Downloading file for report ID: {}", reportId);
 
@@ -182,6 +176,7 @@ public class LabController {
 
     // Pathologist deletes a lab report
     @DeleteMapping("/deleteReport/{reportId}")
+    @SuppressWarnings("null")
     public ResponseEntity<?> deleteReport(@PathVariable Long reportId) {
         log.info("Deleting lab report ID: {}", reportId);
 

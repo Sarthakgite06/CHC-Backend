@@ -96,6 +96,7 @@ public class MedicalRecordServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     public void createNewMedicalRecordTest(){
 
         String healthCardNo="PUN00123456";
@@ -122,7 +123,6 @@ public class MedicalRecordServiceImplTest {
         UserEntity userEntity=getUserEntity();
         MedicalRecordRequestDTO medicalRecordRequestDTO=getMedicalRecordRequestDTO();
         MedicalRecordEntity medicalRecordEntity=getMedicalRecordEntity();
-        PatientEntity patientEntity=getPatientEntity();
 
         Mockito.when(modelMapper.map(Mockito.any(MedicalRecordRequestDTO.class),Mockito.any())).thenReturn(medicalRecordEntity);
         Mockito.when(userRepo.findByHealthCardNo(Mockito.anyString())).thenReturn(Optional.ofNullable(null));

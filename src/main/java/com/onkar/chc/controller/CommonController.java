@@ -52,6 +52,6 @@ public class CommonController {
             medicalHistoryResponseDTO = medicalRecordService.getMedicalRecord(cardId.isBlank() ? cardId : cardId);
             return new ResponseEntity<>(medicalHistoryResponseDTO, HttpStatus.ACCEPTED);
         } else
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }

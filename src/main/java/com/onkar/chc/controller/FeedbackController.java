@@ -35,6 +35,7 @@ public class FeedbackController {
      * Any authenticated user can submit feedback
      */
     @PostMapping("/submit")
+    @SuppressWarnings("null")
     public ResponseEntity<Map<String, String>> submitFeedback(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody Map<String, String> body) {

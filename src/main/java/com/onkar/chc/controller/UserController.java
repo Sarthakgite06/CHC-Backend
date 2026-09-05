@@ -36,7 +36,7 @@ public class UserController {
         if(userResponseDTO!=null)
             return new ResponseEntity<>(userResponseDTO, HttpStatus.OK);
         else
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     //get
@@ -60,6 +60,6 @@ public class UserController {
     public ResponseEntity<Long> getDoctorRegNo(@RequestParam String userName) {
         return doctorRepo.findByUserName(userName)
             .map(doctor -> new ResponseEntity<>(doctor.getDoctorRegiNo(), HttpStatus.OK))
-            .orElseGet(() -> new ResponseEntity<>(null, HttpStatus.NOT_FOUND));
+            .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 }

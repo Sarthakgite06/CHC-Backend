@@ -27,11 +27,13 @@ public class JWTStuff {
     }
 
     // retrieve username from jwt token
+    @SuppressWarnings("null")
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
     // retrieve expiration date from jwt token
+    @SuppressWarnings("null")
     public Date getExpirationDateFromToken(String token) {
         return getClaimFromToken(token, Claims::getExpiration);
     }

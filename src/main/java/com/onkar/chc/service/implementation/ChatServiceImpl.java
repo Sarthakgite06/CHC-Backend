@@ -33,7 +33,14 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional
+    @SuppressWarnings("null")
     public ChatResponseDTO chat(String userName, ChatRequestDTO request) {
+        if (request == null || request.getMessage() == null || request.getMessage().trim().isEmpty()) {
+            return ChatResponseDTO.builder()
+                    .reply("Please provide a message or question.")
+                    .build();
+        }
+
         UserEntity user = userRepo.findByUserName(userName)
                 .orElseThrow(() -> new DataNotFoundException("User not found"));
 
@@ -60,6 +67,7 @@ public class ChatServiceImpl implements ChatService {
         return ChatResponseDTO.builder().reply(aiResponse).build();
     }
 
+    @SuppressWarnings("null")
     private String buildSystemPrompt(UserEntity user, ChatRequestDTO request) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -130,6 +138,7 @@ public class ChatServiceImpl implements ChatService {
         return basePrompt;
     }
 
+    @SuppressWarnings("null")
     private void saveChatHistory(UserEntity user, String sender, String message) {
         chatHistoryRepo.save(ChatHistoryEntity.builder()
                 .user(user)
