@@ -111,7 +111,7 @@ public class MedicalRecordServiceImplTest {
         Mockito.when(medicalRecordRepo.save(Mockito.any(MedicalRecordEntity.class))).thenReturn(medicalRecordEntity);
 
         String returnMsg=medicalRecordService.createNewMedicalRecord(medicalRecordRequestDTO,healthCardNo, null, null, null, null, null, userEntity);
-        String exMsg="Medical record created successfully.";
+        String exMsg="Data is saved.";
         Assertions.assertEquals(exMsg,returnMsg);
     }
 

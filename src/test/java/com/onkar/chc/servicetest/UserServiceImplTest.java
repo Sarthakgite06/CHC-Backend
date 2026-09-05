@@ -18,6 +18,9 @@ import org.mockito.ThrowingConsumer;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import com.onkar.chc.service.HealthCardIdGenerator;
+
 import java.util.Optional;
 import java.util.concurrent.Executor;
 
@@ -27,9 +30,14 @@ public class UserServiceImplTest {
     @Mock
     private UserRepo userRepo;
 
-
     @Mock
     private ModelMapper modelMapper;
+
+    @Mock
+    private BCryptPasswordEncoder passwordEncoder;
+
+    @Mock
+    private HealthCardIdGenerator healthCardIdGenerator;
 
     @InjectMocks
     private UserServiceImpl userServiceImpl;
@@ -43,9 +51,11 @@ public class UserServiceImplTest {
 
         Mockito.when(userRepo.save(Mockito.any(UserEntity.class))).thenReturn(userEntity);
         Mockito.when(modelMapper.map(Mockito.any(UserRequestDTO.class),Mockito.any())).thenReturn(userEntity);
+        Mockito.when(passwordEncoder.encode(Mockito.any())).thenReturn("hashedPassword");
+        Mockito.when(healthCardIdGenerator.generateHealthCardId(Mockito.any())).thenReturn("PUN12345");
 
         String returnMsg = userServiceImpl.signUp(userDTO);
-        String exMsg="User is registered successfully.";
+        String exMsg="User registered successfully. Your Health Card ID: PUN12345";
         Assertions.assertEquals(exMsg,returnMsg);
 
     }
@@ -57,6 +67,8 @@ public class UserServiceImplTest {
 
         Mockito.when(userRepo.save(Mockito.any(UserEntity.class))).thenReturn(null);
         Mockito.when(modelMapper.map(Mockito.any(UserRequestDTO.class),Mockito.any())).thenReturn(userEntity);
+        Mockito.when(passwordEncoder.encode(Mockito.any())).thenReturn("hashedPassword");
+        Mockito.when(healthCardIdGenerator.generateHealthCardId(Mockito.any())).thenReturn("PUN12345");
 
         String returnMsg = userServiceImpl.signUp(userDTO);
         String exMsg="User is not registered.";
@@ -74,6 +86,7 @@ public class UserServiceImplTest {
         UserResponseDTO userResponseDTO=getUserResponseDTO();
 
         Mockito.when(userRepo.findByUserName(Mockito.anyString())).thenReturn(Optional.ofNullable(userEntity));
+        Mockito.when(passwordEncoder.matches(Mockito.any(), Mockito.any())).thenReturn(true);
         Mockito.when(modelMapper.map(Mockito.any(UserEntity.class),Mockito.any())).thenReturn(null);
 
         UserResponseDTO returnDTO = userServiceImpl.login(userName, password);
@@ -107,6 +120,7 @@ public class UserServiceImplTest {
         UserResponseDTO userResponseDTO = getUserResponseDTO();
 
         Mockito.when(userRepo.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(userEntity));
+        Mockito.when(passwordEncoder.encode(Mockito.any())).thenReturn("hashedPassword");
         Mockito.when(userRepo.save(Mockito.any(UserEntity.class))).thenReturn(userEntity);
 
         String expectedMsg="Data updated successfully.";
